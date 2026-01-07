@@ -1,0 +1,54 @@
+{
+  "name": "keyenv",
+  "version": "0.1.0",
+  "description": "Official Node.js SDK for KeyEnv - Secure secrets management",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "keyenv",
+    "secrets",
+    "environment",
+    "env",
+    "dotenv",
+    "secrets-management",
+    "configuration"
+  ],
+  "author": "KeyEnv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keyenv/node-sdk.git"
+  },
+  "homepage": "https://keyenv.dev",
+  "bugs": {
+    "url": "https://github.com/keyenv/node-sdk/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}
