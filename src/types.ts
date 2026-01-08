@@ -4,6 +4,8 @@ export interface KeyEnvOptions {
   token: string;
   /** Request timeout in milliseconds (default: 30000) */
   timeout?: number;
+  /** Cache TTL in seconds for exportSecrets/loadEnv (default: 0 = disabled). Also configurable via KEYENV_CACHE_TTL env var. */
+  cacheTtl?: number;
 }
 
 /** User or service token info */

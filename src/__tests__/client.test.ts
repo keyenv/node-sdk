@@ -207,6 +207,268 @@ describe('KeyEnv', () => {
       );
       expect(result).toEqual(mockResult);
     });
+
+    it('getProject returns project with environments', async () => {
+      const mockProject = {
+        id: 'proj-1',
+        team_id: 'team-1',
+        name: 'My Project',
+        slug: 'my-project',
+        created_at: '2024-01-01T00:00:00Z',
+        environments: [
+          { id: 'env-1', project_id: 'proj-1', name: 'development', created_at: '2024-01-01T00:00:00Z' },
+          { id: 'env-2', project_id: 'proj-1', name: 'production', created_at: '2024-01-01T00:00:00Z' },
+        ],
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockProject),
+      } as Response);
+
+      const project = await client.getProject('proj-1');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1',
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(project).toEqual(mockProject);
+      expect(project.environments).toHaveLength(2);
+    });
+
+    it('createProject creates new project', async () => {
+      const mockProject = {
+        id: 'proj-new',
+        team_id: 'team-1',
+        name: 'New Project',
+        slug: 'new-project',
+        created_at: '2024-01-01T00:00:00Z',
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve(mockProject),
+      } as Response);
+
+      const project = await client.createProject('team-1', 'New Project');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ team_id: 'team-1', name: 'New Project' }),
+        })
+      );
+      expect(project).toEqual(mockProject);
+    });
+
+    it('deleteProject sends DELETE request', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+      } as Response);
+
+      await client.deleteProject('proj-1');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1',
+        expect.objectContaining({ method: 'DELETE' })
+      );
+    });
+
+    it('listEnvironments returns environments array', async () => {
+      const mockEnvironments = [
+        { id: 'env-1', project_id: 'proj-1', name: 'development', created_at: '2024-01-01T00:00:00Z' },
+        { id: 'env-2', project_id: 'proj-1', name: 'staging', created_at: '2024-01-01T00:00:00Z' },
+        { id: 'env-3', project_id: 'proj-1', name: 'production', created_at: '2024-01-01T00:00:00Z' },
+      ];
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ environments: mockEnvironments }),
+      } as Response);
+
+      const environments = await client.listEnvironments('proj-1');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments',
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(environments).toEqual(mockEnvironments);
+    });
+
+    it('createEnvironment creates new environment', async () => {
+      const mockEnvironment = {
+        id: 'env-new',
+        project_id: 'proj-1',
+        name: 'staging',
+        inherits_from: 'development',
+        created_at: '2024-01-01T00:00:00Z',
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve(mockEnvironment),
+      } as Response);
+
+      const environment = await client.createEnvironment('proj-1', 'staging', 'development');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ name: 'staging', inherits_from: 'development' }),
+        })
+      );
+      expect(environment).toEqual(mockEnvironment);
+    });
+
+    it('deleteEnvironment sends DELETE request', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+      } as Response);
+
+      await client.deleteEnvironment('proj-1', 'staging');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments/staging',
+        expect.objectContaining({ method: 'DELETE' })
+      );
+    });
+
+    it('listSecrets returns secrets without values', async () => {
+      const mockSecrets = [
+        { id: 's1', environment_id: 'env-1', key: 'DATABASE_URL', type: 'string', version: 1, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+        { id: 's2', environment_id: 'env-1', key: 'API_KEY', type: 'string', version: 1, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+      ];
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ secrets: mockSecrets }),
+      } as Response);
+
+      const secrets = await client.listSecrets('proj-1', 'production');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments/production/secrets',
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(secrets).toEqual(mockSecrets);
+    });
+
+    it('getSecret returns single secret with value', async () => {
+      const mockSecret = {
+        id: 's1',
+        environment_id: 'env-1',
+        key: 'DATABASE_URL',
+        value: 'postgres://localhost:5432/mydb',
+        type: 'string',
+        version: 1,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ secret: mockSecret }),
+      } as Response);
+
+      const secret = await client.getSecret('proj-1', 'production', 'DATABASE_URL');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments/production/secrets/DATABASE_URL',
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(secret).toEqual(mockSecret);
+    });
+
+    it('createSecret creates new secret', async () => {
+      const mockSecret = {
+        id: 's-new',
+        environment_id: 'env-1',
+        key: 'NEW_SECRET',
+        type: 'string',
+        description: 'A new secret',
+        version: 1,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ secret: mockSecret }),
+      } as Response);
+
+      const secret = await client.createSecret('proj-1', 'production', 'NEW_SECRET', 'secret-value', 'A new secret');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments/production/secrets',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ key: 'NEW_SECRET', value: 'secret-value', description: 'A new secret' }),
+        })
+      );
+      expect(secret).toEqual(mockSecret);
+    });
+
+    it('updateSecret updates existing secret', async () => {
+      const mockSecret = {
+        id: 's1',
+        environment_id: 'env-1',
+        key: 'DATABASE_URL',
+        type: 'string',
+        version: 2,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-02T00:00:00Z',
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ secret: mockSecret }),
+      } as Response);
+
+      const secret = await client.updateSecret('proj-1', 'production', 'DATABASE_URL', 'postgres://newhost:5432/mydb');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments/production/secrets/DATABASE_URL',
+        expect.objectContaining({
+          method: 'PUT',
+          body: JSON.stringify({ value: 'postgres://newhost:5432/mydb', description: undefined }),
+        })
+      );
+      expect(secret).toEqual(mockSecret);
+    });
+
+    it('getSecretHistory returns version history', async () => {
+      const mockHistory = [
+        { id: 'h1', secret_id: 's1', value: 'old-value', version: 1, changed_by: 'user-1', changed_at: '2024-01-01T00:00:00Z' },
+        { id: 'h2', secret_id: 's1', value: 'new-value', version: 2, changed_by: 'user-1', changed_at: '2024-01-02T00:00:00Z' },
+      ];
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ history: mockHistory }),
+      } as Response);
+
+      const history = await client.getSecretHistory('proj-1', 'production', 'DATABASE_URL');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.keyenv.dev/api/v1/projects/proj-1/environments/production/secrets/DATABASE_URL/history',
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(history).toEqual(mockHistory);
+      expect(history).toHaveLength(2);
+    });
   });
 
   describe('generateEnvFile', () => {

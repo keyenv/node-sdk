@@ -16,6 +16,13 @@ import { KeyEnvError } from './types.js';
 const BASE_URL = 'https://api.keyenv.dev';
 const DEFAULT_TIMEOUT = 30000;
 
+/** Module-level cache for secrets (survives across warm serverless invocations) */
+const secretsCache = new Map<string, { secrets: SecretWithValue[]; expiresAt: number }>();
+
+function getCacheKey(projectId: string, environment: string): string {
+  return `${projectId}:${environment}`;
+}
+
 /**
  * KeyEnv API client for managing secrets
  *
@@ -32,6 +39,7 @@ const DEFAULT_TIMEOUT = 30000;
 export class KeyEnv {
   private readonly token: string;
   private readonly timeout: number;
+  private readonly cacheTtl: number;
 
   constructor(options: KeyEnvOptions) {
     if (!options.token) {
@@ -39,6 +47,9 @@ export class KeyEnv {
     }
     this.token = options.token;
     this.timeout = options.timeout || DEFAULT_TIMEOUT;
+    // Cache TTL: constructor option → env var → 0 (disabled)
+    this.cacheTtl = options.cacheTtl ??
+      (process.env.KEYENV_CACHE_TTL ? parseInt(process.env.KEYENV_CACHE_TTL, 10) : 0);
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -146,7 +157,8 @@ export class KeyEnv {
   }
 
   /**
-   * Export all secrets with their decrypted values
+   * Export all secrets with their decrypted values.
+   * Results are cached when cacheTtl > 0.
    * @example
    * ```ts
    * const secrets = await client.exportSecrets('project-id', 'production');
@@ -156,9 +168,28 @@ export class KeyEnv {
    * ```
    */
   async exportSecrets(projectId: string, environment: string): Promise<SecretWithValue[]> {
+    const cacheKey = getCacheKey(projectId, environment);
+
+    // Check cache if TTL > 0
+    if (this.cacheTtl > 0) {
+      const cached = secretsCache.get(cacheKey);
+      if (cached && Date.now() < cached.expiresAt) {
+        return cached.secrets;
+      }
+    }
+
     const response = await this.request<{ secrets: SecretWithValue[] }>(
       'GET', `/api/v1/projects/${projectId}/environments/${environment}/secrets/export`
     );
+
+    // Store in cache if TTL > 0
+    if (this.cacheTtl > 0) {
+      secretsCache.set(cacheKey, {
+        secrets: response.secrets,
+        expiresAt: Date.now() + (this.cacheTtl * 1000),
+      });
+    }
+
     return response.secrets;
   }
 
@@ -191,6 +222,7 @@ export class KeyEnv {
       'POST', `/api/v1/projects/${projectId}/environments/${environment}/secrets`,
       { key, value, description }
     );
+    this.clearCache(projectId, environment);
     return response.secret;
   }
 
@@ -202,6 +234,7 @@ export class KeyEnv {
       'PUT', `/api/v1/projects/${projectId}/environments/${environment}/secrets/${key}`,
       { value, description }
     );
+    this.clearCache(projectId, environment);
     return response.secret;
   }
 
@@ -224,6 +257,7 @@ export class KeyEnv {
     await this.request<void>(
       'DELETE', `/api/v1/projects/${projectId}/environments/${environment}/secrets/${key}`
     );
+    this.clearCache(projectId, environment);
   }
 
   /** Get secret version history */
@@ -247,10 +281,12 @@ export class KeyEnv {
   async bulkImport(
     projectId: string, environment: string, secrets: BulkSecretItem[], options: { overwrite?: boolean } = {}
   ): Promise<BulkImportResult> {
-    return this.request<BulkImportResult>(
+    const result = await this.request<BulkImportResult>(
       'POST', `/api/v1/projects/${projectId}/environments/${environment}/secrets/bulk`,
       { secrets, overwrite: options.overwrite ?? false }
     );
+    this.clearCache(projectId, environment);
+    return result;
   }
 
   /**
@@ -290,5 +326,25 @@ export class KeyEnv {
     }
 
     return lines.join('\n') + '\n';
+  }
+
+  /**
+   * Clear the secrets cache.
+   * @param projectId - Clear cache for specific project (optional)
+   * @param environment - Clear cache for specific environment (requires projectId)
+   */
+  clearCache(projectId?: string, environment?: string): void {
+    if (projectId && environment) {
+      secretsCache.delete(getCacheKey(projectId, environment));
+    } else if (projectId) {
+      // Clear all environments for this project
+      for (const key of secretsCache.keys()) {
+        if (key.startsWith(`${projectId}:`)) {
+          secretsCache.delete(key);
+        }
+      }
+    } else {
+      secretsCache.clear();
+    }
   }
 }
