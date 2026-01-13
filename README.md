@@ -103,6 +103,19 @@ for (const env of project.environments) {
 }
 ```
 
+### Service Token Info
+
+```typescript
+// Get current user or service token info
+const user = await client.getCurrentUser();
+
+if (user.auth_type === 'service_token') {
+  // Service tokens can access multiple projects
+  console.log('Projects:', user.project_ids);
+  console.log('Scopes:', user.scopes);
+}
+```
+
 ## Error Handling
 
 ```typescript
