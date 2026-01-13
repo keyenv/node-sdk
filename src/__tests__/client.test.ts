@@ -59,6 +59,28 @@ describe('KeyEnv', () => {
       expect(user).toEqual(mockUser);
     });
 
+    it('getCurrentUser returns service token with project_ids', async () => {
+      const mockServiceToken = {
+        id: 'token-123',
+        auth_type: 'service_token',
+        team_id: 'team-456',
+        project_ids: ['proj-1', 'proj-2'],
+        scopes: ['read', 'write'],
+      };
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockServiceToken),
+      } as Response);
+
+      const user = await client.getCurrentUser();
+
+      expect(user.auth_type).toBe('service_token');
+      expect(user.project_ids).toEqual(['proj-1', 'proj-2']);
+      expect(user.team_id).toBe('team-456');
+    });
+
     it('listProjects returns projects array', async () => {
       const mockProjects = [
         { id: 'proj-1', team_id: 'team-1', name: 'Project 1', slug: 'project-1' },

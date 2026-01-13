@@ -19,8 +19,8 @@ export interface User {
   auth_type?: 'service_token' | 'user';
   /** Team ID (for service tokens) */
   team_id?: string;
-  /** Project ID (for project-scoped service tokens) */
-  project_id?: string;
+  /** Project IDs (for project-scoped service tokens) */
+  project_ids?: string[];
   /** Token scopes (for service tokens) */
   scopes?: string[];
   created_at: string;
