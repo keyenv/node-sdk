@@ -169,6 +169,12 @@ Create a new KeyEnv client.
 | `bulkImport(projectId, env, secrets)` | Bulk import secrets |
 | `loadEnv(projectId, env)` | Load secrets into process.env |
 | `generateEnvFile(projectId, env)` | Generate .env file content |
+| `listPermissions(projectId, env)` | List permissions for an environment |
+| `setPermission(projectId, env, userId, role)` | Set user's permission |
+| `deletePermission(projectId, env, userId)` | Delete user's permission |
+| `getMyPermissions(projectId)` | Get current user's permissions |
+| `getProjectDefaults(projectId)` | Get default permissions |
+| `setProjectDefaults(projectId, defaults)` | Set default permissions |
 
 ## License
 

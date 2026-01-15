@@ -11,4 +11,9 @@ export type {
   SecretHistory,
   BulkSecretItem,
   BulkImportResult,
+  EnvironmentRole,
+  EnvironmentPermission,
+  MyPermission,
+  MyPermissionsResponse,
+  ProjectDefault,
 } from './types.js';

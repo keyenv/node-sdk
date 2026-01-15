@@ -113,3 +113,44 @@ export class KeyEnvError extends Error {
     this.details = details;
   }
 }
+
+/** Environment permission role */
+export type EnvironmentRole = 'none' | 'read' | 'write' | 'admin';
+
+/** Environment permission for a user */
+export interface EnvironmentPermission {
+  id: string;
+  environment_id: string;
+  user_id: string;
+  role: EnvironmentRole;
+  user_email?: string;
+  user_name?: string;
+  granted_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** User's permission for an environment */
+export interface MyPermission {
+  environment_id: string;
+  environment_name: string;
+  role: EnvironmentRole;
+  can_read: boolean;
+  can_write: boolean;
+  can_admin: boolean;
+}
+
+/** Response for getting user's permissions */
+export interface MyPermissionsResponse {
+  permissions: MyPermission[];
+  is_team_admin: boolean;
+}
+
+/** Project default permission for an environment */
+export interface ProjectDefault {
+  id: string;
+  project_id: string;
+  environment_name: string;
+  default_role: EnvironmentRole;
+  created_at: string;
+}

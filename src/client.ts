@@ -10,6 +10,10 @@ import type {
   BulkSecretItem,
   BulkImportResult,
   ApiError,
+  EnvironmentRole,
+  EnvironmentPermission,
+  MyPermissionsResponse,
+  ProjectDefault,
 } from './types.js';
 import { KeyEnvError } from './types.js';
 
@@ -346,5 +350,150 @@ export class KeyEnv {
     } else {
       secretsCache.clear();
     }
+  }
+
+  // ============================================================================
+  // Environment Permission Management
+  // ============================================================================
+
+  /**
+   * List all permissions for an environment.
+   * @param projectId - The project ID
+   * @param environment - The environment name
+   * @returns Array of environment permissions
+   * @example
+   * ```ts
+   * const permissions = await client.listPermissions('project-id', 'production');
+   * for (const perm of permissions) {
+   *   console.log(`${perm.user_email}: ${perm.role}`);
+   * }
+   * ```
+   */
+  async listPermissions(projectId: string, environment: string): Promise<EnvironmentPermission[]> {
+    const response = await this.request<{ permissions: EnvironmentPermission[] }>(
+      'GET', `/api/v1/projects/${projectId}/environments/${environment}/permissions`
+    );
+    return response.permissions;
+  }
+
+  /**
+   * Set a user's permission for an environment.
+   * @param projectId - The project ID
+   * @param environment - The environment name
+   * @param userId - The user ID to set permission for
+   * @param role - The permission role ('none', 'read', 'write', or 'admin')
+   * @returns The created or updated permission
+   * @example
+   * ```ts
+   * const permission = await client.setPermission('project-id', 'production', 'user-id', 'write');
+   * console.log(`Set ${permission.user_email} to ${permission.role}`);
+   * ```
+   */
+  async setPermission(
+    projectId: string, environment: string, userId: string, role: EnvironmentRole
+  ): Promise<EnvironmentPermission> {
+    const response = await this.request<{ permission: EnvironmentPermission }>(
+      'PUT', `/api/v1/projects/${projectId}/environments/${environment}/permissions/${userId}`,
+      { role }
+    );
+    return response.permission;
+  }
+
+  /**
+   * Delete a user's permission for an environment.
+   * @param projectId - The project ID
+   * @param environment - The environment name
+   * @param userId - The user ID to delete permission for
+   * @example
+   * ```ts
+   * await client.deletePermission('project-id', 'production', 'user-id');
+   * ```
+   */
+  async deletePermission(projectId: string, environment: string, userId: string): Promise<void> {
+    await this.request<void>(
+      'DELETE', `/api/v1/projects/${projectId}/environments/${environment}/permissions/${userId}`
+    );
+  }
+
+  /**
+   * Bulk set permissions for multiple users in an environment.
+   * @param projectId - The project ID
+   * @param environment - The environment name
+   * @param permissions - Array of user permissions to set
+   * @returns Array of created or updated permissions
+   * @example
+   * ```ts
+   * const permissions = await client.bulkSetPermissions('project-id', 'production', [
+   *   { userId: 'user-1', role: 'write' },
+   *   { userId: 'user-2', role: 'read' },
+   * ]);
+   * ```
+   */
+  async bulkSetPermissions(
+    projectId: string, environment: string, permissions: Array<{ userId: string; role: EnvironmentRole }>
+  ): Promise<EnvironmentPermission[]> {
+    const response = await this.request<{ permissions: EnvironmentPermission[] }>(
+      'PUT', `/api/v1/projects/${projectId}/environments/${environment}/permissions`,
+      { permissions: permissions.map(p => ({ user_id: p.userId, role: p.role })) }
+    );
+    return response.permissions;
+  }
+
+  /**
+   * Get the current user's permissions for all environments in a project.
+   * @param projectId - The project ID
+   * @returns The user's permissions and team admin status
+   * @example
+   * ```ts
+   * const { permissions, is_team_admin } = await client.getMyPermissions('project-id');
+   * for (const perm of permissions) {
+   *   console.log(`${perm.environment_name}: ${perm.role} (can_write: ${perm.can_write})`);
+   * }
+   * ```
+   */
+  async getMyPermissions(projectId: string): Promise<MyPermissionsResponse> {
+    return this.request<MyPermissionsResponse>('GET', `/api/v1/projects/${projectId}/my-permissions`);
+  }
+
+  /**
+   * Get default permission settings for a project's environments.
+   * @param projectId - The project ID
+   * @returns Array of project default permissions
+   * @example
+   * ```ts
+   * const defaults = await client.getProjectDefaults('project-id');
+   * for (const def of defaults) {
+   *   console.log(`${def.environment_name}: ${def.default_role}`);
+   * }
+   * ```
+   */
+  async getProjectDefaults(projectId: string): Promise<ProjectDefault[]> {
+    const response = await this.request<{ defaults: ProjectDefault[] }>(
+      'GET', `/api/v1/projects/${projectId}/permissions/defaults`
+    );
+    return response.defaults;
+  }
+
+  /**
+   * Set default permission settings for a project's environments.
+   * @param projectId - The project ID
+   * @param defaults - Array of default permissions to set
+   * @returns Array of updated project default permissions
+   * @example
+   * ```ts
+   * const defaults = await client.setProjectDefaults('project-id', [
+   *   { environmentName: 'development', defaultRole: 'write' },
+   *   { environmentName: 'production', defaultRole: 'read' },
+   * ]);
+   * ```
+   */
+  async setProjectDefaults(
+    projectId: string, defaults: Array<{ environmentName: string; defaultRole: EnvironmentRole }>
+  ): Promise<ProjectDefault[]> {
+    const response = await this.request<{ defaults: ProjectDefault[] }>(
+      'PUT', `/api/v1/projects/${projectId}/permissions/defaults`,
+      { defaults: defaults.map(d => ({ environment_name: d.environmentName, default_role: d.defaultRole })) }
+    );
+    return response.defaults;
   }
 }
