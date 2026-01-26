@@ -6,6 +6,8 @@ export interface KeyEnvOptions {
   timeout?: number;
   /** Cache TTL in seconds for exportSecrets/loadEnv (default: 0 = disabled). Also configurable via KEYENV_CACHE_TTL env var. */
   cacheTtl?: number;
+  /** Custom API base URL (default: https://api.keyenv.dev). Also configurable via KEYENV_API_URL env var. */
+  baseUrl?: string;
 }
 
 /** User or service token info */

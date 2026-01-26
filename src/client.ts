@@ -17,7 +17,7 @@ import type {
 } from './types.js';
 import { KeyEnvError } from './types.js';
 
-const BASE_URL = 'https://api.keyenv.dev';
+const DEFAULT_BASE_URL = 'https://api.keyenv.dev';
 const DEFAULT_TIMEOUT = 30000;
 
 /** Module-level cache for secrets (survives across warm serverless invocations) */
@@ -42,6 +42,7 @@ function getCacheKey(projectId: string, environment: string): string {
  */
 export class KeyEnv {
   private readonly token: string;
+  private readonly baseUrl: string;
   private readonly timeout: number;
   private readonly cacheTtl: number;
 
@@ -50,6 +51,8 @@ export class KeyEnv {
       throw new Error('KeyEnv token is required');
     }
     this.token = options.token;
+    // Base URL: constructor option → env var → default
+    this.baseUrl = (options.baseUrl ?? process.env.KEYENV_API_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
     this.timeout = options.timeout || DEFAULT_TIMEOUT;
     // Cache TTL: constructor option → env var → 0 (disabled)
     this.cacheTtl = options.cacheTtl ??
@@ -57,7 +60,7 @@ export class KeyEnv {
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const url = `${BASE_URL}${path}`;
+    const url = `${this.baseUrl}${path}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
