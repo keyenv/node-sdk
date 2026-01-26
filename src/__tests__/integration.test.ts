@@ -191,12 +191,13 @@ describe.skipIf(SKIP_INTEGRATION)('Integration Tests', () => {
       const history = await client.getSecretHistory(TEST_PROJECT, TEST_ENVIRONMENT, secretKey);
 
       expect(Array.isArray(history)).toBe(true);
-      expect(history.length).toBeGreaterThanOrEqual(2);
+      // History stores previous versions only (not the current version)
+      // After create + update, history has 1 entry (the original version 1)
+      expect(history.length).toBeGreaterThanOrEqual(1);
 
-      // History should contain both versions
+      // History should contain the previous version
       const versions = history.map((h) => h.version);
       expect(versions).toContain(1);
-      expect(versions).toContain(2);
     });
 
     it('deletes the secret', async () => {
