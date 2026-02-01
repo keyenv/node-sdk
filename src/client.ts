@@ -20,9 +20,6 @@ import { KeyEnvError } from './types.js';
 const DEFAULT_BASE_URL = 'https://api.keyenv.dev';
 const DEFAULT_TIMEOUT = 30000;
 
-/** Module-level cache for secrets (survives across warm serverless invocations) */
-const secretsCache = new Map<string, { secrets: SecretWithValue[]; expiresAt: number }>();
-
 function getCacheKey(projectId: string, environment: string): string {
   return `${projectId}:${environment}`;
 }
@@ -45,6 +42,7 @@ export class KeyEnv {
   private readonly baseUrl: string;
   private readonly timeout: number;
   private readonly cacheTtl: number;
+  private readonly secretsCache = new Map<string, { secrets: SecretWithValue[]; expiresAt: number }>();
 
   constructor(options: KeyEnvOptions) {
     if (!options.token) {
@@ -179,9 +177,13 @@ export class KeyEnv {
 
     // Check cache if TTL > 0
     if (this.cacheTtl > 0) {
-      const cached = secretsCache.get(cacheKey);
+      const cached = this.secretsCache.get(cacheKey);
       if (cached && Date.now() < cached.expiresAt) {
         return cached.secrets;
+      }
+      // Delete expired entry to prevent memory leaks
+      if (cached) {
+        this.secretsCache.delete(cacheKey);
       }
     }
 
@@ -191,7 +193,7 @@ export class KeyEnv {
 
     // Store in cache if TTL > 0
     if (this.cacheTtl > 0) {
-      secretsCache.set(cacheKey, {
+      this.secretsCache.set(cacheKey, {
         secrets: response.secrets,
         expiresAt: Date.now() + (this.cacheTtl * 1000),
       });
@@ -324,8 +326,8 @@ export class KeyEnv {
 
     for (const secret of secrets) {
       const value = secret.value;
-      if (value.includes('\n') || value.includes('"') || value.includes("'") || value.includes(' ')) {
-        const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      if (value.includes('\n') || value.includes('"') || value.includes("'") || value.includes(' ') || value.includes('$')) {
+        const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\$/g, '\\$');
         lines.push(`${secret.key}="${escaped}"`);
       } else {
         lines.push(`${secret.key}=${value}`);
@@ -342,16 +344,16 @@ export class KeyEnv {
    */
   clearCache(projectId?: string, environment?: string): void {
     if (projectId && environment) {
-      secretsCache.delete(getCacheKey(projectId, environment));
+      this.secretsCache.delete(getCacheKey(projectId, environment));
     } else if (projectId) {
       // Clear all environments for this project
-      for (const key of secretsCache.keys()) {
+      for (const key of this.secretsCache.keys()) {
         if (key.startsWith(`${projectId}:`)) {
-          secretsCache.delete(key);
+          this.secretsCache.delete(key);
         }
       }
     } else {
-      secretsCache.clear();
+      this.secretsCache.clear();
     }
   }
 

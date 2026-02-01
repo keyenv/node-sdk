@@ -507,6 +507,24 @@ describe('KeyEnv', () => {
       vi.restoreAllMocks();
     });
 
+    it('escapes dollar signs in values', async () => {
+      const mockSecrets = [
+        { id: 's1', environment_id: 'env-1', key: 'DOLLAR_VAR', value: 'price=$100', type: 'string', version: 1 },
+        { id: 's2', environment_id: 'env-1', key: 'SIMPLE', value: 'no_special', type: 'string', version: 1 },
+      ];
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ secrets: mockSecrets }),
+      } as Response);
+
+      const content = await client.generateEnvFile('proj-1', 'production');
+
+      expect(content).toContain('DOLLAR_VAR="price=\\$100"');
+      expect(content).toContain('SIMPLE=no_special');
+    });
+
     it('generates valid .env content', async () => {
       const mockSecrets = [
         { id: 's1', environment_id: 'env-1', key: 'SIMPLE', value: 'value', type: 'string', version: 1 },
@@ -527,6 +545,47 @@ describe('KeyEnv', () => {
       expect(content).toContain('WITH_SPACES="hello world"');
       expect(content).toContain('WITH_QUOTES="say \\"hello\\""');
     });
+  });
+});
+
+describe('Cache isolation', () => {
+  it('different client instances do not share cache', async () => {
+    const fetchMock = vi.fn();
+    global.fetch = fetchMock;
+
+    const mockSecrets1 = [
+      { id: 's1', environment_id: 'env-1', key: 'KEY1', value: 'value_from_client1', type: 'string', version: 1 },
+    ];
+    const mockSecrets2 = [
+      { id: 's2', environment_id: 'env-1', key: 'KEY1', value: 'value_from_client2', type: 'string', version: 1 },
+    ];
+
+    // Client 1 fetches and caches
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ secrets: mockSecrets1 }),
+    } as Response);
+
+    // Client 2 fetches and caches separately
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ secrets: mockSecrets2 }),
+    } as Response);
+
+    const client1 = new KeyEnv({ token: 'token-1', cacheTtl: 300 });
+    const client2 = new KeyEnv({ token: 'token-2', cacheTtl: 300 });
+
+    const secrets1 = await client1.exportSecrets('proj-1', 'production');
+    const secrets2 = await client2.exportSecrets('proj-1', 'production');
+
+    // Each client should have fetched separately
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(secrets1[0].value).toBe('value_from_client1');
+    expect(secrets2[0].value).toBe('value_from_client2');
+
+    vi.restoreAllMocks();
   });
 });
 
