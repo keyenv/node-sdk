@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/keyenv/node-sdk/compare/keyenv-v1.1.0...keyenv-v1.1.1) (2026-02-01)
+
+
+### Bug Fixes
+
+* security and correctness fixes with test coverage ([91cd1be](https://github.com/keyenv/node-sdk/commit/91cd1bec456096a7f8ed07a458fb6c85e3eaabc7))
+
 ## [1.1.0](https://github.com/keyenv/node-sdk/compare/keyenv-v1.0.0...keyenv-v1.1.0) (2026-01-24)
 
 
