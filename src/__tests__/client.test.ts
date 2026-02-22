@@ -42,7 +42,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(mockUser),
+        json: () => Promise.resolve({ data: mockUser }),
       } as Response);
 
       const user = await client.getCurrentUser();
@@ -71,7 +71,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(mockServiceToken),
+        json: () => Promise.resolve({ data: mockServiceToken }),
       } as Response);
 
       const user = await client.getCurrentUser();
@@ -246,7 +246,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(mockProject),
+        json: () => Promise.resolve({ data: mockProject }),
       } as Response);
 
       const project = await client.getProject('proj-1');
@@ -271,7 +271,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 201,
-        json: () => Promise.resolve(mockProject),
+        json: () => Promise.resolve({ data: mockProject }),
       } as Response);
 
       const project = await client.createProject('team-1', 'New Project');
@@ -334,7 +334,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 201,
-        json: () => Promise.resolve(mockEnvironment),
+        json: () => Promise.resolve({ data: mockEnvironment }),
       } as Response);
 
       const environment = await client.createEnvironment('proj-1', 'staging', 'development');

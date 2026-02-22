@@ -103,7 +103,8 @@ export class KeyEnv {
 
   /** Get the current user or service token info */
   async getCurrentUser(): Promise<User> {
-    return this.request<User>('GET', '/api/v1/users/me');
+    const response = await this.request<{ data: User }>('GET', '/api/v1/users/me');
+    return response.data;
   }
 
   /** Validate the token and return user info */
@@ -119,12 +120,14 @@ export class KeyEnv {
 
   /** Get a project by ID */
   async getProject(projectId: string): Promise<ProjectWithEnvironments> {
-    return this.request<ProjectWithEnvironments>('GET', `/api/v1/projects/${projectId}`);
+    const response = await this.request<{ data: ProjectWithEnvironments }>('GET', `/api/v1/projects/${projectId}`);
+    return response.data;
   }
 
   /** Create a new project */
   async createProject(teamId: string, name: string): Promise<Project> {
-    return this.request<Project>('POST', '/api/v1/projects', { team_id: teamId, name });
+    const response = await this.request<{ data: Project }>('POST', '/api/v1/projects', { team_id: teamId, name });
+    return response.data;
   }
 
   /** Delete a project */
@@ -142,10 +145,11 @@ export class KeyEnv {
 
   /** Create a new environment */
   async createEnvironment(projectId: string, name: string, inheritsFrom?: string): Promise<Environment> {
-    return this.request<Environment>(
+    const response = await this.request<{ data: Environment }>(
       'POST', `/api/v1/projects/${projectId}/environments`,
       { name, inherits_from: inheritsFrom }
     );
+    return response.data;
   }
 
   /** Delete an environment */
