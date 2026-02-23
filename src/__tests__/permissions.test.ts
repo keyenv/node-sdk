@@ -48,7 +48,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permissions: mockPermissions }),
+        json: () => Promise.resolve({ data: mockPermissions }),
       } as Response);
 
       const permissions = await client.listPermissions('proj-1', 'production');
@@ -72,7 +72,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permissions: [] }),
+        json: () => Promise.resolve({ data: [] }),
       } as Response);
 
       const permissions = await client.listPermissions('proj-1', 'development');
@@ -143,7 +143,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permission: mockPermission }),
+        json: () => Promise.resolve({ data: mockPermission }),
       } as Response);
 
       const permission = await client.setPermission('proj-1', 'production', 'user-1', 'none');
@@ -172,7 +172,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permission: mockPermission }),
+        json: () => Promise.resolve({ data: mockPermission }),
       } as Response);
 
       const permission = await client.setPermission('proj-1', 'production', 'user-1', 'read');
@@ -201,7 +201,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permission: mockPermission }),
+        json: () => Promise.resolve({ data: mockPermission }),
       } as Response);
 
       const permission = await client.setPermission('proj-1', 'staging', 'user-1', 'write');
@@ -230,7 +230,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permission: mockPermission }),
+        json: () => Promise.resolve({ data: mockPermission }),
       } as Response);
 
       const permission = await client.setPermission('proj-1', 'production', 'user-1', 'admin');
@@ -379,7 +379,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permissions: mockPermissions }),
+        json: () => Promise.resolve({ data: mockPermissions }),
       } as Response);
 
       const permissions = await client.bulkSetPermissions('proj-1', 'production', [
@@ -411,7 +411,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permissions: [] }),
+        json: () => Promise.resolve({ data: [] }),
       } as Response);
 
       await client.bulkSetPermissions('proj-1', 'staging', [
@@ -446,7 +446,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permissions: mockPermissions }),
+        json: () => Promise.resolve({ data: mockPermissions }),
       } as Response);
 
       const result = await client.bulkSetPermissions('proj-1', 'production', [
@@ -461,7 +461,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ permissions: [] }),
+        json: () => Promise.resolve({ data: [] }),
       } as Response);
 
       const permissions = await client.bulkSetPermissions('proj-1', 'production', []);
@@ -664,7 +664,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ defaults: mockDefaults }),
+        json: () => Promise.resolve({ data: mockDefaults }),
       } as Response);
 
       const defaults = await client.getProjectDefaults('proj-1');
@@ -683,7 +683,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ defaults: [] }),
+        json: () => Promise.resolve({ data: [] }),
       } as Response);
 
       const defaults = await client.getProjectDefaults('proj-1');
@@ -744,7 +744,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ defaults: mockDefaults }),
+        json: () => Promise.resolve({ data: mockDefaults }),
       } as Response);
 
       const defaults = await client.setProjectDefaults('proj-1', [
@@ -767,7 +767,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ defaults: [] }),
+        json: () => Promise.resolve({ data: [] }),
       } as Response);
 
       await client.setProjectDefaults('proj-1', [
@@ -797,7 +797,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ defaults: [] }),
+        json: () => Promise.resolve({ data: [] }),
       } as Response);
 
       const defaults = await client.setProjectDefaults('proj-1', []);
@@ -868,7 +868,7 @@ describe('Permission Methods', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ defaults: mockDefaults }),
+        json: () => Promise.resolve({ data: mockDefaults }),
       } as Response);
 
       const defaults = await client.setProjectDefaults('proj-1', [

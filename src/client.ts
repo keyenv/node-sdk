@@ -114,8 +114,8 @@ export class KeyEnv {
 
   /** List all accessible projects */
   async listProjects(): Promise<Project[]> {
-    const response = await this.request<{ projects: Project[] }>('GET', '/api/v1/projects');
-    return response.projects;
+    const response = await this.request<{ data: Project[] }>('GET', '/api/v1/projects');
+    return response.data;
   }
 
   /** Get a project by ID */
@@ -137,10 +137,10 @@ export class KeyEnv {
 
   /** List environments in a project */
   async listEnvironments(projectId: string): Promise<Environment[]> {
-    const response = await this.request<{ environments: Environment[] }>(
+    const response = await this.request<{ data: Environment[] }>(
       'GET', `/api/v1/projects/${projectId}/environments`
     );
-    return response.environments;
+    return response.data;
   }
 
   /** Create a new environment */
@@ -159,10 +159,10 @@ export class KeyEnv {
 
   /** List secrets in an environment (keys and metadata only) */
   async listSecrets(projectId: string, environment: string): Promise<Secret[]> {
-    const response = await this.request<{ secrets: Secret[] }>(
+    const response = await this.request<{ data: Secret[] }>(
       'GET', `/api/v1/projects/${projectId}/environments/${environment}/secrets`
     );
-    return response.secrets;
+    return response.data;
   }
 
   /**
@@ -191,19 +191,19 @@ export class KeyEnv {
       }
     }
 
-    const response = await this.request<{ secrets: SecretWithValue[] }>(
+    const response = await this.request<{ data: SecretWithValue[] }>(
       'GET', `/api/v1/projects/${projectId}/environments/${environment}/secrets/export`
     );
 
     // Store in cache if TTL > 0
     if (this.cacheTtl > 0) {
       this.secretsCache.set(cacheKey, {
-        secrets: response.secrets,
+        secrets: response.data,
         expiresAt: Date.now() + (this.cacheTtl * 1000),
       });
     }
 
-    return response.secrets;
+    return response.data;
   }
 
   /**
@@ -221,34 +221,34 @@ export class KeyEnv {
 
   /** Get a single secret with its value */
   async getSecret(projectId: string, environment: string, key: string): Promise<SecretWithValue> {
-    const response = await this.request<{ secret: SecretWithValue }>(
+    const response = await this.request<{ data: SecretWithValue }>(
       'GET', `/api/v1/projects/${projectId}/environments/${environment}/secrets/${key}`
     );
-    return response.secret;
+    return response.data;
   }
 
   /** Create a new secret */
   async createSecret(
     projectId: string, environment: string, key: string, value: string, description?: string
   ): Promise<Secret> {
-    const response = await this.request<{ secret: Secret }>(
+    const response = await this.request<{ data: Secret }>(
       'POST', `/api/v1/projects/${projectId}/environments/${environment}/secrets`,
       { key, value, description }
     );
     this.clearCache(projectId, environment);
-    return response.secret;
+    return response.data;
   }
 
   /** Update a secret's value */
   async updateSecret(
     projectId: string, environment: string, key: string, value: string, description?: string
   ): Promise<Secret> {
-    const response = await this.request<{ secret: Secret }>(
+    const response = await this.request<{ data: Secret }>(
       'PUT', `/api/v1/projects/${projectId}/environments/${environment}/secrets/${key}`,
       { value, description }
     );
     this.clearCache(projectId, environment);
-    return response.secret;
+    return response.data;
   }
 
   /** Set a secret (create or update) */
@@ -275,10 +275,10 @@ export class KeyEnv {
 
   /** Get secret version history */
   async getSecretHistory(projectId: string, environment: string, key: string): Promise<SecretHistory[]> {
-    const response = await this.request<{ history: SecretHistory[] }>(
+    const response = await this.request<{ data: SecretHistory[] }>(
       'GET', `/api/v1/projects/${projectId}/environments/${environment}/secrets/${key}/history`
     );
-    return response.history;
+    return response.data;
   }
 
   /**
@@ -294,12 +294,12 @@ export class KeyEnv {
   async bulkImport(
     projectId: string, environment: string, secrets: BulkSecretItem[], options: { overwrite?: boolean } = {}
   ): Promise<BulkImportResult> {
-    const result = await this.request<BulkImportResult>(
+    const response = await this.request<{ data: BulkImportResult }>(
       'POST', `/api/v1/projects/${projectId}/environments/${environment}/secrets/bulk`,
       { secrets, overwrite: options.overwrite ?? false }
     );
     this.clearCache(projectId, environment);
-    return result;
+    return response.data;
   }
 
   /**
@@ -379,10 +379,10 @@ export class KeyEnv {
    * ```
    */
   async listPermissions(projectId: string, environment: string): Promise<EnvironmentPermission[]> {
-    const response = await this.request<{ permissions: EnvironmentPermission[] }>(
+    const response = await this.request<{ data: EnvironmentPermission[] }>(
       'GET', `/api/v1/projects/${projectId}/environments/${environment}/permissions`
     );
-    return response.permissions;
+    return response.data;
   }
 
   /**
@@ -401,11 +401,11 @@ export class KeyEnv {
   async setPermission(
     projectId: string, environment: string, userId: string, role: EnvironmentRole
   ): Promise<EnvironmentPermission> {
-    const response = await this.request<{ permission: EnvironmentPermission }>(
+    const response = await this.request<{ data: EnvironmentPermission }>(
       'PUT', `/api/v1/projects/${projectId}/environments/${environment}/permissions/${userId}`,
       { role }
     );
-    return response.permission;
+    return response.data;
   }
 
   /**
@@ -441,11 +441,11 @@ export class KeyEnv {
   async bulkSetPermissions(
     projectId: string, environment: string, permissions: Array<{ userId: string; role: EnvironmentRole }>
   ): Promise<EnvironmentPermission[]> {
-    const response = await this.request<{ permissions: EnvironmentPermission[] }>(
+    const response = await this.request<{ data: EnvironmentPermission[] }>(
       'PUT', `/api/v1/projects/${projectId}/environments/${environment}/permissions`,
       { permissions: permissions.map(p => ({ user_id: p.userId, role: p.role })) }
     );
-    return response.permissions;
+    return response.data;
   }
 
   /**
@@ -477,10 +477,10 @@ export class KeyEnv {
    * ```
    */
   async getProjectDefaults(projectId: string): Promise<ProjectDefault[]> {
-    const response = await this.request<{ defaults: ProjectDefault[] }>(
+    const response = await this.request<{ data: ProjectDefault[] }>(
       'GET', `/api/v1/projects/${projectId}/permissions/defaults`
     );
-    return response.defaults;
+    return response.data;
   }
 
   /**
@@ -499,10 +499,10 @@ export class KeyEnv {
   async setProjectDefaults(
     projectId: string, defaults: Array<{ environmentName: string; defaultRole: EnvironmentRole }>
   ): Promise<ProjectDefault[]> {
-    const response = await this.request<{ defaults: ProjectDefault[] }>(
+    const response = await this.request<{ data: ProjectDefault[] }>(
       'PUT', `/api/v1/projects/${projectId}/permissions/defaults`,
       { defaults: defaults.map(d => ({ environment_name: d.environmentName, default_role: d.defaultRole })) }
     );
-    return response.defaults;
+    return response.data;
   }
 }

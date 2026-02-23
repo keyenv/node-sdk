@@ -90,7 +90,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ projects: mockProjects }),
+        json: () => Promise.resolve({ data: mockProjects }),
       } as Response);
 
       const projects = await client.listProjects();
@@ -107,7 +107,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secrets: mockSecrets }),
+        json: () => Promise.resolve({ data: mockSecrets }),
       } as Response);
 
       const secrets = await client.exportSecrets('proj-1', 'production');
@@ -128,7 +128,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secrets: mockSecrets }),
+        json: () => Promise.resolve({ data: mockSecrets }),
       } as Response);
 
       const env = await client.exportSecretsAsObject('proj-1', 'production');
@@ -153,7 +153,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 201,
-        json: () => Promise.resolve({ secret: mockSecret }),
+        json: () => Promise.resolve({ data: mockSecret }),
       } as Response);
 
       const secret = await client.setSecret('proj-1', 'production', 'NEW_KEY', 'new-value');
@@ -310,7 +310,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ environments: mockEnvironments }),
+        json: () => Promise.resolve({ data: mockEnvironments }),
       } as Response);
 
       const environments = await client.listEnvironments('proj-1');
@@ -372,7 +372,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secrets: mockSecrets }),
+        json: () => Promise.resolve({ data: mockSecrets }),
       } as Response);
 
       const secrets = await client.listSecrets('proj-1', 'production');
@@ -399,7 +399,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secret: mockSecret }),
+        json: () => Promise.resolve({ data: mockSecret }),
       } as Response);
 
       const secret = await client.getSecret('proj-1', 'production', 'DATABASE_URL');
@@ -426,7 +426,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 201,
-        json: () => Promise.resolve({ secret: mockSecret }),
+        json: () => Promise.resolve({ data: mockSecret }),
       } as Response);
 
       const secret = await client.createSecret('proj-1', 'production', 'NEW_SECRET', 'secret-value', 'A new secret');
@@ -455,7 +455,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secret: mockSecret }),
+        json: () => Promise.resolve({ data: mockSecret }),
       } as Response);
 
       const secret = await client.updateSecret('proj-1', 'production', 'DATABASE_URL', 'postgres://newhost:5432/mydb');
@@ -479,7 +479,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ history: mockHistory }),
+        json: () => Promise.resolve({ data: mockHistory }),
       } as Response);
 
       const history = await client.getSecretHistory('proj-1', 'production', 'DATABASE_URL');
@@ -516,7 +516,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secrets: mockSecrets }),
+        json: () => Promise.resolve({ data: mockSecrets }),
       } as Response);
 
       const content = await client.generateEnvFile('proj-1', 'production');
@@ -535,7 +535,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ secrets: mockSecrets }),
+        json: () => Promise.resolve({ data: mockSecrets }),
       } as Response);
 
       const content = await client.generateEnvFile('proj-1', 'production');
@@ -564,14 +564,14 @@ describe('Cache isolation', () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: () => Promise.resolve({ secrets: mockSecrets1 }),
+      json: () => Promise.resolve({ data: mockSecrets1 }),
     } as Response);
 
     // Client 2 fetches and caches separately
     fetchMock.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: () => Promise.resolve({ secrets: mockSecrets2 }),
+      json: () => Promise.resolve({ data: mockSecrets2 }),
     } as Response);
 
     const client1 = new KeyEnv({ token: 'token-1', cacheTtl: 300 });
