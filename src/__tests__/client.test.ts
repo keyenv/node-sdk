@@ -206,7 +206,7 @@ describe('KeyEnv', () => {
       fetchMock.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.resolve(mockResult),
+        json: () => Promise.resolve({ data: mockResult }),
       } as Response);
 
       const result = await client.bulkImport('proj-1', 'development', [
