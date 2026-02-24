@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.1](https://github.com/keyenv/node-sdk/compare/keyenv-v1.1.0...keyenv-v1.1.1) (2026-02-24)
+
+
+### Bug Fixes
+
+* security and correctness fixes with test coverage ([91cd1be](https://github.com/keyenv/node-sdk/commit/91cd1bec456096a7f8ed07a458fb6c85e3eaabc7))
+* standardize API response envelope to use data wrapper ([c68705e](https://github.com/keyenv/node-sdk/commit/c68705e9493462adee1828caf16a93aad3d36a67))
+* unwrap data envelope for single-resource API responses ([6a74322](https://github.com/keyenv/node-sdk/commit/6a743220f1bd49f6a723bc7d8f58282d513bb330))
+* update test mocks to match data envelope response format ([9c3eb8d](https://github.com/keyenv/node-sdk/commit/9c3eb8d6271c0f11a5788985b66eff89ece8d2ad))
+
 ## [1.1.0](https://github.com/keyenv/node-sdk/compare/keyenv-v1.0.0...keyenv-v1.1.0) (2026-01-24)
 
 
