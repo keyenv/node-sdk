@@ -68,7 +68,7 @@ export class KeyEnv {
         headers: {
           'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
-          'User-Agent': 'keyenv-node/1.0.0',
+          'User-Agent': '@keyenv/node/1.0.0',
         },
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
