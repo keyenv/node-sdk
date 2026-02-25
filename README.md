@@ -5,13 +5,13 @@ Official Node.js SDK for [KeyEnv](https://keyenv.dev) - Secure secrets managemen
 ## Installation
 
 ```bash
-npm install keyenv
+npm install @keyenv/node
 ```
 
 ## Quick Start
 
 ```typescript
-import { KeyEnv } from 'keyenv';
+import { KeyEnv } from '@keyenv/node';
 
 const client = new KeyEnv({
   token: process.env.KEYENV_TOKEN!,
@@ -27,7 +27,7 @@ console.log(process.env.DATABASE_URL);
 ### Initialize the Client
 
 ```typescript
-import { KeyEnv } from 'keyenv';
+import { KeyEnv } from '@keyenv/node';
 
 const client = new KeyEnv({
   token: 'your-service-token',
@@ -119,7 +119,7 @@ if (user.auth_type === 'service_token') {
 ## Error Handling
 
 ```typescript
-import { KeyEnv, KeyEnvError } from 'keyenv';
+import { KeyEnv, KeyEnvError } from '@keyenv/node';
 
 try {
   await client.getSecret('project-id', 'production', 'MISSING_KEY');
@@ -138,7 +138,7 @@ try {
 The SDK is written in TypeScript and includes full type definitions:
 
 ```typescript
-import type { Secret, SecretWithValue, Project } from 'keyenv';
+import type { Secret, SecretWithValue, Project } from '@keyenv/node';
 ```
 
 ## API Reference
